@@ -1,0 +1,24 @@
+A Merkle tree (also known as a hash tree) is a binary tree in which each leaf node represents a hash of a data block, and each non-leaf node represents a hash of the concatenation of its two child nodes. Merkle trees are used in blockchain and other distributed systems to efficiently and securely verify the integrity of data.
+
+Merkle Tree Explanation:
+Leaf Nodes: Represent hashes of data blocks (such as transactions or files).
+Non-leaf Nodes: Represent hashes of the concatenation of their two child nodes.
+Root Node: The final hash that represents the entire structure, providing a fingerprint of all data in the tree.
+Steps to implement a Merkle Tree:
+Hash the leaves: For each data item, calculate the hash (e.g., SHA-256).
+Pairwise hash the inner nodes: Recursively concatenate pairs of hashes to create the parent node until only one node (the root) is left.
+
+Explanation of the Code:
+sha256 function: This function hashes the input data using SHA-256, a common cryptographic hash function.
+
+MerkleTree class:
+
+Constructor: Takes a list of data blocks (transactions, files, etc.) and hashes each block to form the leaf nodes of the tree.
+build_tree method: This method iterates over the current level of the tree (starting with the leaf nodes), hashes each pair of adjacent nodes, and moves up to the next level. It continues this process until only one node remains (the root of the Merkle tree).
+get_root method: This method returns the root of the Merkle tree, which is the last remaining node at the top.
+display_tree method: This function prints out each level of the Merkle tree for visualization.
+Example usage: The program defines a list of data blocks (in this case, transactions) and constructs a Merkle tree. It displays the tree structure and outputs the Merkle root.
+
+Sample Output:
+
+This program demonstrates the construction of a Merkle tree in Python, which is useful for verifying data integrity in systems like blockchain. The Merkle root serves as a secure fingerprint of all the data blocks, making it easy to check if any piece of data has been tampered with by comparing the root against a known value.
