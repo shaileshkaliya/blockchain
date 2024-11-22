@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Lottery {
+contract Lottery_ {
     // Array to store addresses of participants
     address[] public participants;
 
