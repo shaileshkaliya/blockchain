@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decentralized Bank</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Decentralized Bank</h1>
+    <!-- Deposit Section -->
+    <div>
+        <label for="depositAmount">Deposit Amount (in Ether):</label>
+        <input type="number" id="depositAmount" step="0.01" />
+        <button onclick="deposit()">Deposit</button>
+    </div>
+    <br>
+    <!-- Withdraw Section -->
+    <div>
+        <label for="withdrawAmount">Withdraw Amount (in Ether):</label>
+        <input type="number" id="withdrawAmount" step="0.01" />
+        <button onclick="withdraw()">Withdraw</button>
+    </div>
+    <br>
+    <!-- Balance Section -->
+    <div>
+        <button onclick="getBalance()">Check Balance</button>
+        <p id="balance">Your balance will appear here.</p>
+    </div>
+
+    <script>
+        // Connect to Ethereum blockchain using Web3.js
+        const web3 = new Web3(window.ethereum);
+
+        // Contract ABI and Address
+        const contractABI = [
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "Deposit",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "Withdrawal",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "deposit",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getBalance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_amount",
+				"type": "uint256"
+			}
+		],
+		"name": "withdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+];
+        const contractAddress = '0x0fC5025C764cE34df352757e82f7B5c4Df39A836'; // Replace with deployed contract address
+
+        // Initialize the contract
+        const bankContract = new web3.eth.Contract(contractABI, contractAddress);
+
+        // Function to request MetaMask account access
+        async function requestAccount() {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+        }
+
+        // Deposit Ether into the bank
+        async function deposit() {
+            const amount = document.getElementById("depositAmount").value;
+            if (!amount || amount <= 0) {
+                alert("Enter a valid deposit amount");
+                return;
+            }
+
+            const accounts = await web3.eth.getAccounts();
+            const value = web3.utils.toWei(amount, 'ether');
+            
+            try {
+                await bankContract.methods.deposit().send({
+                    from: accounts[0],
+                    value: value
+                });
+                alert('Deposit successful!');
+            } catch (error) {
+                console.error(error);
+                alert('Deposit failed.');
+            }
+        }
+
+        // Withdraw Ether from the bank
+        async function withdraw() {
+            const amount = document.getElementById("withdrawAmount").value;
+            if (!amount || amount <= 0) {
+                alert("Enter a valid withdrawal amount");
+                return;
+            }
+
+            const accounts = await web3.eth.getAccounts();
+            const value = web3.utils.toWei(amount, 'ether');
+            
+            try {
+                await bankContract.methods.withdraw(value).send({
+                    from: accounts[0]
+                });
+                alert('Withdrawal successful!');
+            } catch (error) {
+                console.error(error);
+                alert('Withdrawal failed.');
+            }
+        }
+
+        // Check balance
+        async function getBalance() {
+            const accounts = await web3.eth.getAccounts();
+            
+            try {
+                const balance = await bankContract.methods.getBalance().call({
+                    from: accounts[0]
+                });
+                document.getElementById("balance").innerText = 
+                    `Your balance: ${web3.utils.fromWei(balance, 'ether')} ETH`;
+            } catch (error) {
+                console.error(error);
+                alert('Failed to fetch balance.');
+            }
+        }
+    </script>
+</body>
+</html>
