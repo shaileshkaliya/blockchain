@@ -1,0 +1,36 @@
+Event Organization Smart Contract
+The main functionalities of this contract will include:
+
+Event Creation: Organizers can create events with details like the event name, date, and ticket price.
+Ticket Booking: Users can book tickets for events by sending Ether (or a specific token).
+RSVP Tracking: Users can RSVP to events and cancel their RSVP if needed.
+Refunds: If a user cancels their RSVP or if the event is canceled, the system should allow for refunds.
+
+Explanation of the Contract:
+Variables:
+
+owner: The address of the contract owner (creator).
+events: A mapping of event IDs to Event structs.
+eventCount: A counter for the number of events created.
+Struct Event:
+
+Stores details about each event such as name, date, ticket price, available tickets, the number of tickets sold, the organizer's address, and whether the event is canceled or not.
+Modifiers:
+
+onlyOrganizer: Ensures only the event organizer can perform certain actions.
+eventExists: Ensures the event ID is valid.
+isNotCanceled: Ensures the event is not canceled.
+isEventActive: Ensures the event is still active (i.e., before the event date).
+Functions:
+
+createEvent: Allows an organizer to create a new event by specifying event name, date, ticket price, and the number of available tickets.
+bookTicket: Allows a user to book a ticket for an event by paying the correct ticket price. It ensures that tickets are still available, and that the user hasn't already booked a ticket.
+cancelTicket: Allows a user to cancel their booking and receive a refund for the ticket price.
+cancelEvent: Allows the event organizer to cancel the event. This refunds all ticket buyers.
+getEventDetails: Allows anyone to view the details of an event (name, date, ticket price, etc.).
+Events:
+
+EventCreated: Emitted when a new event is created.
+TicketBooked: Emitted when a user successfully books a ticket.
+TicketCanceled: Emitted when a user cancels their ticket.
+EventCanceled: Emitted when an event is canceled by the organizer.
