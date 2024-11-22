@@ -37,7 +37,7 @@ contract Lottery_ {
         require(participants.length > 0, "No participants in the lottery");
 
         // Generate a pseudo-random number
-        uint randomIndex = random() % participants.length;
+        uint randomIndex = uint(keccak256(abi.encodePacked(block.timestamp, block.difficulty, participants))) % participants.length;
 
         // Select the winner
         address winner = participants[randomIndex];
@@ -50,12 +50,6 @@ contract Lottery_ {
             participants.pop();
         }
     }
-
-    // Helper function to generate a pseudo-random number
-    function random() private view returns (uint) {
-    return uint(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, participants)));
-}
-
 
 
     // Function to get the list of participants
