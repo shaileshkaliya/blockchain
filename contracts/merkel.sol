@@ -6,8 +6,8 @@ contract MerkleTree {
     bytes32 public merkleRoot; // Store the Merkle root
 
     // Add new leaf (hashed) to the leaves array
-    function addLeaf(bytes32 _leaf) public {
-        leaves.push(_leaf);
+    function addLeaf(string memory _leaf) public {
+        leaves.push(keccak256(bytes(_leaf)));
     }
 
     // Function to construct the Merkle Tree and compute Merkle Root
@@ -43,24 +43,63 @@ contract MerkleTree {
         merkleRoot = currentLevel[0];
     }
 
-    // Verify whether a leaf belongs to the Merkle Tree using Merkle proof
-    function verify(bytes32 leaf, bytes32[] memory proof, bytes32 root) public pure returns (bool) {
+    // Verify whether a string is part of the Merkle Tree
+    function verify(string memory leafString) public view returns (bool) {
+        require(leaves.length > 0, "Merkle Tree not generated");
+
+        bytes32 leaf = keccak256(bytes(leafString));
+        uint index = findLeafIndex(leaf);
+        require(index < leaves.length, "Leaf not found");
+
         bytes32 computedHash = leaf;
+        uint n = leaves.length;
+        bytes32[] memory currentLevel = leaves;
 
-        // Rebuild the hash from the proof
-        for (uint i = 0; i < proof.length; i++) {
-            bytes32 proofElement = proof[i];
-
-            // If the proof element is "on the left", hash the computedHash with the proofElement
-            if (computedHash <= proofElement) {
-                computedHash = keccak256(abi.encodePacked(computedHash, proofElement));
-            } else {
-                // If the proof element is "on the right", hash the proofElement with the computedHash
-                computedHash = keccak256(abi.encodePacked(proofElement, computedHash));
+        // Recompute the Merkle root starting from the leaf
+        while (n > 1) {
+            uint nextLevelLength = n / 2;
+            if (n % 2 == 1) {
+                nextLevelLength++;
             }
+            bytes32[] memory nextLevel = new bytes32[](nextLevelLength);
+
+            for (uint i = 0; i < n / 2; i++) {
+                bytes32 left = currentLevel[2 * i];
+                bytes32 right = currentLevel[2 * i + 1];
+
+                if (i == index / 2) {
+                    computedHash = (index % 2 == 0)
+                        ? keccak256(abi.encodePacked(computedHash, right))
+                        : keccak256(abi.encodePacked(left, computedHash));
+                }
+
+                nextLevel[i] = keccak256(abi.encodePacked(left, right));
+            }
+
+            if (n % 2 == 1) {
+                bytes32 last = currentLevel[n - 1];
+                nextLevel[nextLevelLength - 1] = last;
+
+                if (index == n - 1) {
+                    computedHash = keccak256(abi.encodePacked(last));
+                }
+            }
+
+            currentLevel = nextLevel;
+            n = nextLevelLength;
+            index = index / 2;
         }
 
-        // Check if the rebuilt hash matches the root
-        return computedHash == root;
+        return computedHash == merkleRoot;
+    }
+
+    // Helper function to find the index of a leaf
+    function findLeafIndex(bytes32 leaf) internal view returns (uint) {
+        for (uint i = 0; i < leaves.length; i++) {
+            if (leaves[i] == leaf) {
+                return i;
+            }
+        }
+        revert("Leaf not found");
     }
 }
